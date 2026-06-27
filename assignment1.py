@@ -1,68 +1,71 @@
 #!/usr/bin/env python3
-
-'''
-OPS445 Assignment 1
-Program: assignment1.py 
-Author: "Student Name"
-Semester: "Fall/Winter/Summer YYYY"
-
-The python code in this file (assignment1.py) is original work written by
-"Student Name". No code in this file is copied from any other source
-except those provided by the course instructor, including any person,
-textbook, or on-line resource. I have not shared this python script
-with anyone or anything except for submission for grading. I understand
-that the Academic Honesty Policy will be enforced and
-violators will be reported and appropriate action will be taken.
-'''
+# Author ID: amohammad21
 
 import sys
 
-def day_of_week(year: int, month: int, date: int) -> str:
-    "Based on the algorithm by Tomohiko Sakamoto"
-    days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] 
-    offset = {1:0, 2:3, 3:2, 4:5, 5:0, 6:3, 7:5, 8:1, 9:4, 10:6, 11:2, 12:4}
-    if month < 3:
-        year -= 1
-    num = (year + year//4 - year//100 + year//400 + offset[month] + date) % 7
-    return days[num]
+# check if year is a leap year
+def leap_year(year):
+
+    if year % 4 == 0:
+        leap = True
+    else:
+        leap = False
+
+    if year % 100 == 0:
+        leap = False
+
+    if year % 400 == 0:
+        leap = True
+
+    return leap
 
 
-def mon_max(month:int, year:int) -> int:
-    "returns the maximum day for a given month. Includes leap year check"
-    ...
+# get max days for a month
+def mon_max(month, year):
+
+    if leap_year(year):
+        feb_max = 29
+    else:
+        feb_max = 28
+
+    months = {
+        1: 31,
+        2: feb_max,
+        3: 31,
+        4: 30,
+        5: 31,
+        6: 30,
+        7: 31,
+        8: 31,
+        9: 30,
+        10: 31,
+        11: 30,
+        12: 31
+    }
+
+    return months[month]
+
 
 def after(date: str) -> str:
     '''
     after() -> date for next day in YYYY-MM-DD string format
 
     Return the date for the next day of the given date in YYYY-MM-DD format.
-    This function takes care of the number of days in February for leap year.
-    This fucntion has been tested to work for year after 1582
     '''
+
+    # split date into parts
     str_year, str_month, str_day = date.split('-')
+
     year = int(str_year)
     month = int(str_month)
     day = int(str_day)
-    lyear = year % 4
-    if lyear == 0:
-        feb_max = 29 # this is a leap year
-    else:
-        feb_max = 28 # this is not a leap year
 
-    lyear = year % 100
-    if lyear == 0:
-        feb_max = 28 # this is not a leap year
-
-    lyear = year % 400
-    if lyear == 0:
-        feb_max = 29 # this is a leap year
-
-    mon_max = { 1:31, 2:feb_max, 3:31, 4:30, 5:31, 6:30, 7:31, 8:31, 9:30, 10:31, 11:30, 12:31}
+    max_days = mon_max(month, year)
 
     tmp_day = day + 1  # next day
 
-    if tmp_day > mon_max[month]:
-        to_day = tmp_day % mon_max[month]  # if tmp_day > this month's max, reset to 1 
+    if tmp_day > max_days:
+        to_day = tmp_day % max_days
         tmp_month = month + 1
     else:
         to_day = tmp_day
@@ -79,22 +82,93 @@ def after(date: str) -> str:
     return next_date
 
 
-def usage():
-    "Print a usage message to the user"
-    ...
-
-
-def leap_year(year: int) -> bool:
-    "return True if the year is a leap year"
-    ...
-
-def valid_date(date: str) -> bool:
-    "check validity of date and return True if valid"
-    ...
-
-def day_count(start_date: str, stop_date: str) -> int:
-    "Loops through range of dates, and returns number of weekend days"
-    ...
-
 if __name__ == "__main__":
-    ...
+    print(after('2023-01-25'))
+    print(after('2016-02-28'))
+    print(after('2025-12-31'))
+
+#Milestone 2
+
+
+# find day of week
+def day_of_week(date):
+
+    year = int(date[0:4])
+    month = int(date[5:7])
+    day = int(date[8:10])
+
+    offset = [0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4]
+
+    if month < 3:
+        year = year - 1
+
+    day_num = (year + year // 4 - year // 100 + year // 400 + offset[month - 1] + day) % 7
+
+    days = {
+        0: 'Sun',
+        1: 'Mon',
+        2: 'Tue',
+        3: 'Wed',
+        4: 'Thu',
+        5: 'Fri',
+        6: 'Sat'
+    }
+
+    return days[day_num]
+
+
+# check if date is valid
+def valid_date(date):
+
+    if len(date) != 10:
+        return False
+
+    if date[4] != '-' or date[7] != '-':
+        return False
+
+    str_year, str_month, str_day = date.split('-')
+
+    if not str_year.isdigit():
+        return False
+
+    if not str_month.isdigit():
+        return False
+
+    if not str_day.isdigit():
+        return False
+
+    year = int(str_year)
+    month = int(str_month)
+    day = int(str_day)
+
+    if month < 1 or month > 12:
+        return False
+
+    if day < 1:
+        return False
+
+    if day > mon_max(month, year):
+        return False
+
+    return True
+
+
+# count Saturdays and Sundays
+def day_count(start_date, end_date):
+
+    count = 0
+    current = start_date
+
+    while True:
+
+        day = day_of_week(current)
+
+        if day == 'Sat' or day == 'Sun':
+            count = count + 1
+
+        if current == end_date:
+            break
+
+        current = after(current)
+
+    return count
